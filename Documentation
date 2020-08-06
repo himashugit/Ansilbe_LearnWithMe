@@ -1,0 +1,179 @@
+##ANSIBLE
+
+
+Ansible work on Declarative language(just write your code and configuration will be done), Meant for configuration Management.
+If, You want to deploy packages on thousands of servers you can do this managing all servers from one controller. Y
+Imperative language is Scripted one (shell script,Powershell)
+
+Let’s see how to install Ansible. Ansible tool based on Python lang. To install any python package we need the pip library(package). So for ansible we will use pip.
+We have different version of python.(2,3)
+Installation instructions :- https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
+
+Pip3 install ansible or yum install ansible
+
+
+System where you write ansible code is known as controller node. You need an ansible program. So once it is installed check version and when you check version this will give you location for config file where you will find configuration related to clients
+
+To manage host using controller node server we need to put them inside a inventory
+**Vim /etc/ansible/hosts**
+etc/ansible/hosts file will be created during ansible installation.
+This file looks something like this.
+Here you need to put all the client servers which you want to manage using the controller node(ansible host)
+
+
+Once you enter the host details and provide the ssh_pass and username info
+ansible all --list-hosts
+As you can see I’ve added one host in the config host file and it is now reflecting
+
+Ensure IP static on nodes. You can set this using file 
+https://www.linuxtechi.com/configure-static-ip-address-rhel8/
+Let’s now install one s/w to client from ansible node controller host
+
+-m = Module
+-a = Attribute and i want this to be present on all servers defined in host file
+Ansible auto check desire state if s/w is installed on client host or not
+This capability is already built in it.
+
+ If you try this one more time this will give you a already successful message for firefox
+
+
+Ansible module has intelligence. Package Module
+https://docs.ansible.com/ansible/latest/modules/package_module.html
+
+What we want to configure, ansible doesn’t know.
+Ansible know How to do configuration, we need to provide this using Ansible-Playbook
+Like configuring apache server.
+
+Let’s configure the httpd server on one of the nodes. These are termed as one liner ad-hoc commands, before jumping the ansible-playbook we need to understand these first.
+https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html
+
+
+Let’s add one html page at ansible controller node and add this to managed apache html loc.
+Create a file home.html at your current directory and enter some info inside. Use copy module to put this file on a managed node.
+
+
+Restart httpd service on remote host
+
+Let’s do the same steps using Ansible playbook
+
+
+
+
+
+
+There is one more way to write the same code in ansible playbook and here I am using content key word to copy few lines from home.html to nodeserver 
+
+If you run this yml playbook you will get error msg as src and content are mutually exclusive, it means we can not run both at the same time. So we will comment the #src line
+
+
+Ansible has a jinja2 framework. In jinja we use variable as {{}} Lets create var in the above PB
+https://docs.ansible.com/ansible/latest/user_guide/playbooks_templating.html
+
+Also, In ansible we have module debug to print the var value
+https://docs.ansible.com/ansible/latest/modules/debug_module.html
+
+
+The good thing about defining var in playbook file we can use this as dynamic use as well. We can use this in command itself. Ex
+
+
+
+
+
+
+*Ansible has a module command so whatever you run using command via ansible controller node on manage node this will run. This is we call ansible adhoc command
+**ansible all -m command -a date** https://docs.ansible.com/ansible/latest/modules/command_module.html#command-module
+rc=0 return code (success) - When command is success.
+
+We can use register key to store the result in it and calling this value using debug parameter
+
+
+
+You can see the complete output is in x var
+In key:value pair.
+Format = JSON
+
+
+We can use the register parameter to store the output and use it with var to print the rc value
+
+
+
+
+So If any task running and a task failed how to ignore this ?
+For this we use exception handling (ignore_error: yes)
+https://docs.ansible.com/ansible/2.5/user_guide/playbooks_error_handling.html
+
+
+
+We can use the ansible playbook as well for this but this will not give you the rc value (only fail/success)
+
+
+
+###################################################################
+
+Module
+-Service, packages,users,
+Abstraction layer
+Template :- https://docs.ansible.com/ansible/2.5/modules/template_module.html
+
+To copy resolv.conf file from controller node to manage node we can use template ninja file
+Define var in yml file and  change this value inside dnf.conf.j2 file
+
+
+Use ansible-playbook dns.yml to run this
+We can also provide a prompt option when we run this file to enter IP details
+
+
+
+Deploying container using ansible :- https://www.techrepublic.com/article/how-to-deploy-a-container-with-ansible/
+Task
+
+
+Docker module : -https://docs.ansible.com/ansible/latest/modules/docker_image_module.html
+
+Yum description module : -https://docs.ansible.com/ansible/2.3/yum_repository_module.html
+
+Docker guide : -https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-18-04
+https://docs.ansible.com/ansible/latest/modules/docker_image_module.html
+
+Using the docker modules requires having the Docker SDK for Python installed on the host running Ansible. You will need to have >= 1.7.0 installed. For Python 2.7 or Python 3, you can install it as follows:
+
+Copy/file module:- https://docs.ansible.com/ansible/latest/modules/file_module.html#file-module
+For Package and docker
+https://gist.github.com/yonglai/d4617d6914d5f4eb22e4e5a15c0e9a03
+
+Step 1 - Configure the repository (yum) for RedHat and add repo for docker as well.(https://docs.ansible.com/ansible/latest/modules/yum_repository_module.html)
+Step 2 - Install the package for Docker(https://gist.github.com/yonglai/d4617d6914d5f4eb22e4e5a15c0e9a03)
+Step 3 - Start the service and enabled yes for permanent start(https://gist.github.com/yonglai/d4617d6914d5f4eb22e4e5a15c0e9a03)
+Step 4 - Install the module Pip (pip3 install) for ansible. As ansible support python lib to work with Docker 
+Step 5 - Create a dir and copy file using copy/file module
+Step 6 - Download image for httpd and expose to access the webpage
+
+
+
+
+
+Access this using your hostIP
+
+
+Facts :- 
+Install services, packages, Directories, user accounts - Ansible has modules for these tasks
+How ansible discover about OS or how ansible discover which command to use on which OS
+
+Ansible always gather the facts before running any task on OS.
+Facts like - RAM,CPU, OS family and other resources. Name of module that helps ansible to gather the facts is - setup
+
+
+
+Ansible has predefined variables which you will get from the above command. If you want to print this you can do using playbook file
+Ansible_facts - all value store here related to var.s
+Setup module :-
+https://docs.ansible.com/ansible/latest/modules/setup_module.html
+
+
+Let’s gather the value of predefined keyword ansibe_os_family : RedHat value using the play book.
+
+
+Let’s define a condition to install a package on specific OS Family
+
+If we see here this will skip the server in TASK [Package] as it is RedHat Not Ubuntu
+
